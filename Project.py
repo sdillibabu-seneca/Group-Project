@@ -38,6 +38,7 @@ og_source_mac_address = "ff:ff:ff:ff:ff:ff"
 source_mac_address = "ff:ff:ff:ff:ff:ff"
 og_source_ip = "1.1.1.1"
 source_ip = "1.1.1.1"
+values["quantity"]=100
 
 
 # TEMPLATES EXAMPLE
@@ -140,6 +141,12 @@ def variable_error_handling(variable, var_value):
         else:
             print("Invalid timeout value\n")
 
+    if variable == "quantity":
+        if var_value.isnumeric():
+            values["quantity"]=var_value
+        else:
+            print("Invalid quantity value\n")
+            
 # Generic help function to give details about the attack/it's requirements
 def help_func(required_var_list):
     if "source_ip" in required_var_list:
@@ -152,6 +159,8 @@ def help_func(required_var_list):
         print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("target_mac_address"))
     if "timeout" in required_var_list:
         print("to enter the timeout value type any number, you currently have the timeout value set as", values.get("timeout"))
+    if "timeout" in required_var_list:
+        print("to enter the quantity value type any number, you currently have the quantity value set as", values.get("quantity"))  
 
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(required_var_list):
