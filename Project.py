@@ -36,9 +36,12 @@ target_mac_address = "ff:ff:ff:ff:ff:ff"
 values["target_mac_address"]=target_mac_address
 og_source_mac_address = "ff:ff:ff:ff:ff:ff"
 source_mac_address = "ff:ff:ff:ff:ff:ff"
+values["source_mac_address"]=source_mac_address
 og_source_ip = "1.1.1.1"
 source_ip = "1.1.1.1"
+values["source_ip"]=source_ip
 target_ip = "1.1.1.1"
+values["target_ip"]=target_ip
 values["quantity"]=100
 
 
