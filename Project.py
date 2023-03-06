@@ -160,7 +160,7 @@ def help_func(required_var_list):
         print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("target_mac_address"))
     if "timeout" in required_var_list:
         print("to enter the timeout value type any number, you currently have the timeout value set as", values.get("timeout"))
-    if "timeout" in required_var_list:
+    if "quantity" in required_var_list:
         print("to enter the quantity value type any number, you currently have the quantity value set as", values.get("quantity"))  
 
 # Checks to see if all the required variables have been filled
