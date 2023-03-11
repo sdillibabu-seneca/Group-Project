@@ -29,6 +29,7 @@ values["tcp_ports"]=tcp_ports
 # To test comment out everything above (including the import block) and uncomment the block below. Also comment out the two scapy commands in lines 42 and 52
 '''
 import re
+import sys
 values = {}
 tcp_ports = [80, 22]
 values["tcp_ports"]=tcp_ports
@@ -97,7 +98,7 @@ def variable_input(required_variable_list, help_statement):
     while user_input != "done":
         if user_input == "quit":
             print("\nExiting script\n")
-            quit()
+            sys.exit()
         elif user_input == "help":
             print(help_statement)
             help_func(required_variable_list)
@@ -203,6 +204,9 @@ while True:
         available_templates.get(list(available_templates.keys())[data])()
         reset()
         break
+    except KeyboardInterrupt:
+    	print("\nExiting program")
+    	sys.exit()
     except:
         print("\nInvalid input", data)
 
