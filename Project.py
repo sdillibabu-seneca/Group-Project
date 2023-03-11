@@ -32,21 +32,11 @@ from scapy.all import *
 import re
 import sys
 import random
-values = {}
-tcp_ports = [80, 22]
-values["tcp_ports"]=tcp_ports
-target_mac_address = "ff:ff:ff:ff:ff:ff"
-values["target_mac_address"]=target_mac_address
-og_source_mac_address = "ff:ff:ff:ff:ff:ff"
-source_mac_address = "ff:ff:ff:ff:ff:ff"
-values["source_mac_address"]=source_mac_address
-og_source_ip = "1.1.1.1"
-source_ip = "1.1.1.1"
-values["source_ip"]=source_ip
-target_ip = "1.1.1.1"
-values["target_ip"]=target_ip
-values["quantity"]=100
+import subprocess
 
+def get_ip():
+	ip = subprocess.getoutput("ip a | grep eth1")
+	return re.compile(r' inet (\d+\.\d+\.\d+\.\d+)').search(ip).group(1)
 
 # TEMPLATES EXAMPLE   
 def syn_flood():
@@ -186,6 +176,20 @@ def reset():
 
 
 ########## MAIN MENU EXAMPLE ##########
+values = {}
+tcp_ports = [80, 22]
+values["tcp_ports"]=tcp_ports
+target_mac_address = "ff:ff:ff:ff:ff:ff"
+values["target_mac_address"]=target_mac_address
+og_source_mac_address = "ff:ff:ff:ff:ff:ff"
+source_mac_address = "ff:ff:ff:ff:ff:ff"
+values["source_mac_address"]=source_mac_address
+og_source_ip = get_ip()
+source_ip = "1.1.1.1"
+values["source_ip"]=source_ip
+target_ip = "1.1.1.1"
+values["target_ip"]=target_ip
+values["quantity"]=100
 
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
     
@@ -193,6 +197,7 @@ if len(tcp_ports) != 0:
     available_templates["SYN Flood"]=syn_flood
 
 while True:
+    #print(og_source_ip)
     for i, item in enumerate(list(available_templates.keys())[1:],1):
         print("\n", i, '. ' + item, sep='',end='')
     try:
