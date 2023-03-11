@@ -1,24 +1,48 @@
-'''import scapy.all as scapy
+'''from scapy.all import *
 import nmap
 import re
 
-
 values = {}
+
+interfaces = get_if_list()
+if len(interfaces) > 1:
+    while True:
+        for i, item in enumerate(list(interfaces)[1:],1):
+            print("\n", i, '. ' + item, sep='',end='')
+        try:
+            data = int(input("\n\nWhich Interface? (Enter a Number): "))
+            interface_name = interfaces[data]
+            break
+        except:
+            print("\nInvalid input", data)
+else:
+    interface_name = conf.iface
+
+
 # Get Source IP Address
+source_ip = get_if_addr(interface_name)
 values["source_ip"]=source_ip
 og_source_ip = source_ip
 
 # Get Source Mac Address
+source_mac_address = get_if_hwaddr(interface_name)
 values["source_mac_address"]=source_mac_address
 og_source_mac_address = source_mac_address
 
 # Get Target IP Address
-target_ip = input("Enter host IP address: ")
-values["target_ip"]=target_ip
+while True:
+    target_ip = input("Enter host IP address: ")
+    regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+    if(re.search(regex, target_ip.lower())):
+        values["target_ip"]=target_ip
+        break
+    else:
+        print("Invalid IP address\n")
 
 # Get Target MAC Address
 nm = nmap.PortScanner()
-nm.scan(target_ip, '22-443')
+print("Getting target's information. Please wait...")
+nm.scan(target_ip, '0-1023')
 target_mac_address = str(nm[target_ip]['addresses']['mac'])
 values["target_mac_address"]=target_mac_address
 
@@ -26,17 +50,28 @@ values["target_mac_address"]=target_mac_address
 tcp_ports = list(nm[target_ip]['tcp'].keys())
 values["tcp_ports"]=tcp_ports
 
-# To test comment out everything above (including the import block) and uncomment the block below. Also comment out the two scapy commands in lines 42 and 52
+# To test comment out everything above (including the import block) and uncomment the block below
 '''
 from scapy.all import *
 import re
 import sys
 import random
-import subprocess
 
-def get_ip():
-	ip = subprocess.getoutput("ip a | grep eth1")
-	return re.compile(r' inet (\d+\.\d+\.\d+\.\d+)').search(ip).group(1)
+values = {}
+tcp_ports = [80, 22]
+values["tcp_ports"]=tcp_ports
+target_mac_address = "ff:ff:ff:ff:ff:ff"
+values["target_mac_address"]=target_mac_address
+og_source_mac_address = "ff:ff:ff:ff:ff:ff"
+source_mac_address = "ff:ff:ff:ff:ff:ff"
+values["source_mac_address"]=source_mac_address
+og_source_ip = "2.2.2.2"
+source_ip = "2.2.2.2"
+values["source_ip"]=source_ip
+target_ip = "1.1.1.1"
+values["target_ip"]=target_ip
+values["quantity"]=100
+
 
 # TEMPLATES EXAMPLE   
 def syn_flood():
@@ -116,11 +151,7 @@ def variable_error_handling(variable, var_value):
             print("Invalid IP address\n")
     
     if variable == "target_mac_address":
-        regex = "[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$"
-        if(re.search(regex, var_value.lower())):
-            values["target_mac_address"]=var_value.lower()
-        else:
-            print("Invalid mac address\n")
+        print("You are not permitted to change the target MAC address\n")
         
     if variable == "source_mac_address":
         regex = "[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$"
@@ -176,20 +207,6 @@ def reset():
 
 
 ########## MAIN MENU EXAMPLE ##########
-values = {}
-tcp_ports = [80, 22]
-values["tcp_ports"]=tcp_ports
-target_mac_address = "ff:ff:ff:ff:ff:ff"
-values["target_mac_address"]=target_mac_address
-og_source_mac_address = "ff:ff:ff:ff:ff:ff"
-source_mac_address = "ff:ff:ff:ff:ff:ff"
-values["source_mac_address"]=source_mac_address
-og_source_ip = get_ip()
-source_ip = get_ip()
-values["source_ip"]=source_ip
-target_ip = "1.1.1.1"
-values["target_ip"]=target_ip
-values["quantity"]=100
 
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
     
@@ -197,26 +214,15 @@ if len(tcp_ports) != 0:
     available_templates["SYN Flood"]=syn_flood
 
 while True:
-    #print(og_source_ip)
     for i, item in enumerate(list(available_templates.keys())[1:],1):
         print("\n", i, '. ' + item, sep='',end='')
     try:
         data = int(input("\n\nWhich Attack? (Enter a Number): "))
-        #print(available_templates.get(list(available_templates.keys())[data])())
         available_templates.get(list(available_templates.keys())[data])()
         reset()
+        break
     except KeyboardInterrupt:
-    	print("\nExiting program")
-    	sys.exit()
+        print("\nExiting program")
+        sys.exit()
     except:
         print("\nInvalid input", data)
-
-########## NEED TO DO ##########
-
-'''
-Get source ip/mac address
-Adding templates/help pages
-Add error handling for templates (check if possible in try except loop, confirm with user if variables are correct and add option to change if not)
-Add error handling for individual variables (ie ensure that the IP address entered is actually and IP address)
-Add functionality for ip ranges
-'''
