@@ -82,7 +82,7 @@ def check_var(values, required_var_list):
         elif correct == "no":
             new_num = int(input("\nWhich variable do you want to edit? (Enter a number): "))
             try:
-                variable = list(values.keys())[new_num]
+                variable = required_var_list[new_num]
                 print(f"\n{variable} Selected")
                 new_val = input(f"\nEnter the new value for {variable}: ")
                 variable_error_handling(variable, new_val)
