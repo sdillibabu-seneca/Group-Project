@@ -247,7 +247,9 @@ def help_func(required_var_list):
         print("to enter the quantity value type any number, you currently have the quantity value set as", values.get("quantity"))  
     if "query_type" in required_var_list:
         print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
-
+    if "query_name" in required_var_list:
+        print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
+        
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(required_var_list):
     while all(variables in values for variables in required_var_list) is False:
