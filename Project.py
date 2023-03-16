@@ -1,4 +1,4 @@
-'''from scapy.all import *
+from scapy.all import *
 import nmap
 import re
 import sys
@@ -78,8 +78,8 @@ while correct != "yes":
         
 
 # To test comment out everything above (including the import block) and uncomment the block below
-
-from scapy.all import *'''
+'''
+from scapy.all import *
 import re
 import sys
 import os
@@ -100,7 +100,7 @@ values["source_ip"]=source_ip
 target_ip = "1.1.1.1"
 values["target_ip"]=target_ip
 values["quantity"]=100
-
+'''
 
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
