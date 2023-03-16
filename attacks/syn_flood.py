@@ -15,8 +15,8 @@ def syn_flood():
     ns = []
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
-    	ns.extend(template)
-    	ns[pktNum][TCP].dport = random.choice(ports)
+        ns.extend(template)
+        ns[pktNum][TCP].dport = random.choice(ports)
     print(ns)
     send(ns)
     print("Packets sent")
