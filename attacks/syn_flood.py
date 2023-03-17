@@ -1,8 +1,8 @@
 from Project import *
-
 req_port = "any"
 name = "SYN Flood"
 function_name = "syn_flood"
+
 def syn_flood():
     print("SYN Flood")
     valid_var = ["source_mac_address", "target_mac_address", "target_ip", "quantity"]

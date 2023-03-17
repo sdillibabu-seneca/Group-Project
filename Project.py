@@ -5,103 +5,6 @@ import sys
 import os
 import importlib.util
 
-values = {}
-
-interfaces = get_if_list()
-if len(interfaces) > 1:
-    while True:
-        for i, item in enumerate(list(interfaces)[1:],1):
-            print("\n", i, '. ' + item, sep='',end='')
-        try:
-            data = int(input("\n\nWhich Interface? (Enter a Number): "))
-            if 1 <= data <= (len(interfaces)+1):
-                interface_name = interfaces[data]
-                break
-            else:
-                print("\nInvalid input\n", data)
-        except:
-            print("\nInvalid input\n", data)
-else:
-    interface_name = conf.iface
-
-
-# Get Source IP Address
-source_ip = get_if_addr(interface_name)
-values["source_ip"]=source_ip
-og_source_ip = source_ip
-
-# Get Source Mac Address
-source_mac_address = get_if_hwaddr(interface_name)
-values["source_mac_address"]=source_mac_address
-og_source_mac_address = source_mac_address
-
-# Get Target IP Address
-correct = "no"
-while correct != "yes":
-    while True:
-        target_ip = input("\n\nEnter target IP address: ")
-        regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-        if(re.search(regex, target_ip.lower())):
-            values["target_ip"]=target_ip
-            break
-        else:
-            print("\nInvalid IP address\n")
-
-    # Get Target MAC Address
-    nm = nmap.PortScanner()
-    print("\n\nGetting target's information. Please wait...")
-    nm.scan(arguments='F', hosts=target_ip)
-    target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
-    values["target_mac_address"]=target_mac_address
-
-    # Get Target Ports
-    try:
-        ports = list(nm[target_ip]['tcp'].keys())
-        values["ports"]=ports
-        print(ports)
-    except:
-        ports = []
-        values["ports"]=ports
-        print("\nNo ports available on this target\n")
-
-    while True:
-        correct = input("\n\nAttack this host? (yes/no): ")
-        if correct == "yes":
-            break
-        elif correct == "no":
-            break
-        else:
-            print("\nDid not understand, please try again\n")
-
-    if correct == "yes":
-        break
-        
-
-# To test comment out everything above (including the import block) and uncomment the block below
-'''
-from scapy.all import *
-import re
-import sys
-import os
-import importlib.util
-
-
-values = {}
-ports = [80, 22, 53, "any"]
-values["ports"]=ports
-target_mac_address = "00:0c:29:ac:a4:4a"
-values["target_mac_address"]=target_mac_address
-og_source_mac_address = "ff:ff:ff:ff:ff:ff"
-source_mac_address = "ff:ff:ff:ff:ff:ff"
-values["source_mac_address"]=source_mac_address
-og_source_ip = "2.2.2.2"
-source_ip = "2.2.2.2"
-values["source_ip"]=source_ip
-target_ip = "1.1.1.1"
-values["target_ip"]=target_ip
-values["quantity"]=100
-'''
-
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
     correct = "no"
@@ -261,34 +164,111 @@ def reset():
         print("\nReverting MAC address\n")
         #change mac address
 
+def load_modules():
+    attacks_path = os.path.join(os.getcwd(), "attacks")
+    for filename in os.listdir(attacks_path):
+        if filename.endswith(".py"):
+            print(filename)
+            filepath = os.path.join(attacks_path, filename)
+            print(filepath)
+            spec = importlib.util.spec_from_file_location(filename[:-3], filepath)
+            print(spec)
+            module = importlib.util.module_from_spec(spec)
+            print(module)
+            spec.loader.exec_module(module)
+            if module.req_port in ports:
+                available_templates[module.name] = module.function_name
+                globals()[module.function_name] = getattr(module, module.function_name)
+
 
 ########## MAIN MENU EXAMPLE ##########
-attacks_path = os.path.join(os.getcwd(), "attacks")
-
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
 
-for filename in os.listdir(attacks_path):
-    if filename.endswith(".py"):
-        filepath = os.path.join(attacks_path, filename)
-        spec = importlib.util.spec_from_file_location(filename[:-3], filepath)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        if module.req_port in ports:
-            available_templates[module.name] = module.function_name
-            globals()[module.function_name] = getattr(module, module.function_name)
+values = {}
+
+if __name__ == '__main__':
+    interfaces = get_if_list()
+    if len(interfaces) > 1:
+        while True:
+            for i, item in enumerate(list(interfaces)[1:],1):
+                print("\n", i, '. ' + item, sep='',end='')
+            try:
+                data = int(input("\n\nWhich Interface? (Enter a Number): "))
+                if 1 <= data <= (len(interfaces)+1):
+                    interface_name = interfaces[data]
+                    break
+                else:
+                    print("\nInvalid input\n", data)
+            except:
+                print("\nInvalid input\n", data)
+    else:
+        interface_name = conf.iface
 
 
-while True:
-    for i, item in enumerate(list(available_templates.keys())[1:],1):
-        print("\n", i, '. ' + item, sep='',end='')
-    try:
-        data = int(input("\n\nWhich Attack? (Enter a Number): "))
-        if 1 <= data <= (len(list(available_templates.keys())) -1):
-            eval(available_templates.get(list(available_templates.keys())[data]) + "()")
-            reset()
-            #break
-        else:
-            print("\nInvalid input", data)
-    except KeyboardInterrupt:
-        print("\nExiting program")
-        sys.exit()
+    # Get Source IP Address
+    source_ip = get_if_addr(interface_name)
+    values["source_ip"]=source_ip
+    og_source_ip = source_ip
+
+    # Get Source Mac Address
+    source_mac_address = get_if_hwaddr(interface_name)
+    values["source_mac_address"]=source_mac_address
+    og_source_mac_address = source_mac_address
+
+    # Get Target IP Address
+    while True:
+        while True:
+            target_ip = input("\n\nEnter target IP address: ")
+            regex = "^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+            if(re.search(regex, target_ip.lower())):
+                values["target_ip"]=target_ip
+                break
+            else:
+                print("\nInvalid IP address\n")
+
+        # Get Target MAC Address
+        nm = nmap.PortScanner()
+        print("\n\nGetting target's information. Please wait...")
+        nm.scan(arguments='F', hosts=target_ip)
+        target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
+        values["target_mac_address"]= target_mac_address
+
+        # Get Target Ports
+        try:
+            ports = list(nm[target_ip]['tcp'].keys())
+            values["ports"]=ports
+            print(ports)
+        except:
+            ports = []
+            values["ports"]=ports
+            print("\nNo ports available on this target\n")
+        ports.append("any")
+
+        while True:
+            correct = input("\n\nAttack this host? (yes/no): ")
+            if correct == "yes":
+                break
+            elif correct == "no":
+                break
+            else:
+                print("\nDid not understand, please try again\n")
+
+        if correct == "yes":
+            break
+
+    load_modules()
+
+    while True:
+        for i, item in enumerate(list(available_templates.keys())[1:],1):
+            print("\n", i, '. ' + item, sep='',end='')
+        try:
+            data = int(input("\n\nWhich Attack? (Enter a Number): "))
+            if 1 <= data <= (len(list(available_templates.keys())) -1):
+                eval(available_templates.get(list(available_templates.keys())[data]) + "()")
+                reset()
+                #break
+            else:
+                print("\nInvalid input", data)
+        except KeyboardInterrupt:
+            print("\nExiting program")
+            sys.exit()

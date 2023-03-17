@@ -3,6 +3,7 @@ from Project import *
 req_port = 53
 name = "DNS DOS"
 function_name = "bind_dos"
+
 def bind_dos():
     print("Running DNS DOS attack, please enter the parameters:\n")
     valid_var = ["target_ip", "query_type", "query_name","quantity"]
