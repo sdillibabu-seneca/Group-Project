@@ -13,7 +13,6 @@ def bind_dos():
     variable_input(valid_var, help_statement)
     all_variables_inputted(valid_var)
     check_var(values, valid_var)
-    check_compat(values, bind_var)
     template = IP(dst=values.get("target_ip"))/UDP()/DNS(rd=1,qd=DNSQR(qtype=values.get("query_type"),qname=values.get("query_name")))
     pktAmt = int(values.get("quantity"))
     for pktNum in range(0,pktAmt):

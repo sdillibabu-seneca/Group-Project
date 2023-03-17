@@ -28,31 +28,6 @@ def check_var(values, required_var_list):
                 continue
         else:
             print("\nDid not understand, please try again\n")
-            
-# Ensures there's not a mix match for DNS query type and value
-def check_compat(values, required_var_list):
-    correct = "no"
-    while correct != "yes":
-        regex1="([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+"
-        regex2="^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-        if values.get("query_type") == "A" and (re.search(regex2, values.get("query_name").lower())) or values.get("query_type") == "PTR" and (re.search(regex1, values.get("query_name").lower())):
-            print("Mismatch of query type and query name")
-            print("")
-            for i, (k, v) in enumerate({key: values[key] for key in required_var_list if key in values}.items()):
-                print(i, '. ', k, ' is ', v)
-            print("")
-            new_num = int(input("\nWhich variable do you want to edit? (Enter a number): "))
-            try:
-                variable = required_var_list[new_num]
-                print(f"\n{variable} Selected")
-                new_val = input(f"\nEnter the new value for {variable}: ")
-                variable_error_handling(variable, new_val)
-            except:
-                print("\nCould not be found, please try again")
-                continue
-        else:
-            correct == "yes"
-            break
 
 # Allows user to input variables in a non-restrictive way
 def variable_input(required_variable_list, help_statement):
