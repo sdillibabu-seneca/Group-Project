@@ -168,13 +168,9 @@ def load_modules():
     attacks_path = os.path.join(os.getcwd(), "attacks")
     for filename in os.listdir(attacks_path):
         if filename.endswith(".py"):
-            print(filename)
             filepath = os.path.join(attacks_path, filename)
-            print(filepath)
             spec = importlib.util.spec_from_file_location(filename[:-3], filepath)
-            print(spec)
             module = importlib.util.module_from_spec(spec)
-            print(module)
             spec.loader.exec_module(module)
             if module.req_port in ports:
                 available_templates[module.name] = module.function_name
