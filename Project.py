@@ -1,5 +1,5 @@
-from scapy.all import *
-import nmap
+#from scapy.all import *
+#import nmap
 import re
 import sys
 import os
@@ -110,22 +110,60 @@ def variable_error_handling(variable, var_value):
             values["quantity"]=var_value
         else:
             print("Invalid quantity value\n")
-            
-    if variable == "query_type":
-        if var_value == "A" or var_value == "PTR":
-            values["query_type"]=var_value
-        else:
-            print("Invalid query type\n")
-
+    
     if variable == "query_name":
         regex1="([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+"
         regex2="^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
-        if values.get("query_type") == "A" and (re.search(regex1, var_value.lower())):
-            values["query_name"]=var_value
-        elif values.get("query_type") == "PTR" and (re.search(regex2, var_value.lower())):
-            values["query_name"]=var_value
+        
+        if re.search(regex1, var_value.lower()):
+            try:
+                if values.get("query_type") == "A":
+                    values["query_name"]=var_value
+                elif values.get("query_type") == "PTR":
+                    print("Mismatch of query type and query name.")
+                    print("For a query type of A, the query name must be similar to example.com.")
+                    print("No value will be saved.")
+            except:
+                values["query_name"]=var_value
+        elif re.search(regex2, var_value.lower()):
+            try:
+                if values.get("query_type") == "PTR":
+                    values["query_name"]=var_value
+                elif values.get("query_type") == "A":
+                    print("Mismatch of query type and query name.")
+                    print("For a query type of PTR, the query name must be similar to 100.2.1.192.in-addr.arpa.")
+                    print("No value will be saved.")
+            except:
+                values["query_name"]=var_value
         else:
             print("Invalid query name\n")
+            
+    if variable == "query_type":
+        regex1="([a-z0-9|-]+\.)*[a-z0-9|-]+\.[a-z]+"
+        regex2="^((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])$"
+
+        if var_value == "A":
+            try:
+                if re.search(regex1, values.get("query_name").lower()):
+                    values["query_type"]=var_value
+                elif re.search(regex2, values.get("query_name").lower()):
+                    print("Mismatch of query type and query name.")
+                    print("For a query type of A, the query name must be similar to example.com.")
+                    print("No value will be saved.")
+            except:
+                values["query_type"]=var_value
+        elif var_value == "PTR":
+            try:
+                if re.search(regex2, values.get("query_name").lower()):
+                    values["query_type"]=var_value
+                elif re.search(regex1, values.get("query_name").lower()):
+                    print("Mismatch of query type and query name.")
+                    print("For a query type of PTR, the query name must be similar to 100.2.1.192.in-addr.arpa.")
+                    print("No value will be saved.")
+            except:
+                values["query_type"]=var_value
+        else:
+	        print("Invalid query type\n")
             
 # Generic help function to give details about the attack/it's requirements
 def help_func(required_var_list):
@@ -179,10 +217,10 @@ def load_modules():
 
 ########## MAIN MENU EXAMPLE ##########
 available_templates = {"Attack Name/Explaination":"attack_function_name"}
-
 values = {}
 
 if __name__ == '__main__':
+
 
     interfaces = get_if_list()
     if len(interfaces) > 1:
@@ -255,8 +293,6 @@ if __name__ == '__main__':
 
     # TEST VALUES
     '''
-    available_templates = {"Attack Name/Explaination":"attack_function_name"}
-    values = {}
     ports = [80, 22, 53, "any"]
     values["ports"]=ports
     target_mac_address = "00:0c:29:ac:a4:4a"
@@ -271,7 +307,7 @@ if __name__ == '__main__':
     values["target_ip"]=target_ip
     values["quantity"]=100
     '''
-
+    
     load_modules()
 
     while True:
