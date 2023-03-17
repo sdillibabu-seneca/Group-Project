@@ -187,6 +187,7 @@ available_templates = {"Attack Name/Explaination":"attack_function_name"}
 values = {}
 
 if __name__ == '__main__':
+
     interfaces = get_if_list()
     if len(interfaces) > 1:
         while True:
@@ -255,6 +256,25 @@ if __name__ == '__main__':
 
         if correct == "yes":
             break
+
+    # TEST VALUES
+    '''
+    available_templates = {"Attack Name/Explaination":"attack_function_name"}
+    values = {}
+    ports = [80, 22, 53, "any"]
+    values["ports"]=ports
+    target_mac_address = "00:0c:29:ac:a4:4a"
+    values["target_mac_address"]=target_mac_address
+    og_source_mac_address = "ff:ff:ff:ff:ff:ff"
+    source_mac_address = "ff:ff:ff:ff:ff:ff"
+    values["source_mac_address"]=source_mac_address
+    og_source_ip = "2.2.2.2"
+    source_ip = "2.2.2.2"
+    values["source_ip"]=source_ip
+    target_ip = "1.1.1.1"
+    values["target_ip"]=target_ip
+    values["quantity"]=100
+    '''
 
     load_modules()
 
