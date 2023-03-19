@@ -30,7 +30,7 @@ def check_var(values, required_var_list):
             print("\nDid not understand, please try again\n")
 
 # Allows user to input variables in a non-restrictive way
-def variable_input(required_variable_list, help_statement):
+def variable_input(required_variable_list, help_statement, values):
     user_input = input()
     while user_input != "done":
         if user_input == "quit":
@@ -38,14 +38,14 @@ def variable_input(required_variable_list, help_statement):
             quit()
         elif user_input == "help":
             print(help_statement)
-            help_func(required_variable_list)
+            help_func(values, required_variable_list)
             print("Enter done if everything is set to preference")
             print("")
         elif " = " in user_input:
             variable = user_input.split(" = ")[0]
             var_value =  user_input.split(" = ")[1]
             if variable in required_variable_list:
-                variable_error_handling(variable, var_value)
+                variable_error_handling(variable, var_value, values)
             else:
                 print("\nDid not understand, please try again\n")
         else:
@@ -53,7 +53,7 @@ def variable_input(required_variable_list, help_statement):
         user_input = input()
 
 # Checks to see if the values the user inputted for the variables are valid
-def variable_error_handling(variable, var_value):
+def variable_error_handling(variable, var_value, values):
     if variable == "target_ip":
         print("You are not permitted to change the target IP address\n")
 
@@ -141,7 +141,7 @@ def variable_error_handling(variable, var_value):
 	        print("Invalid query type\n")
             
 # Generic help function to give details about the attack/it's requirements
-def help_func(required_var_list):
+def help_func(values, required_var_list):
     if "source_ip" in required_var_list:
         print("to enter ip type source_ip = 1.1.1.1, you currently have the target_ip set as", values.get("source_ip"))
     if "target_ip" in required_var_list:
@@ -160,12 +160,12 @@ def help_func(required_var_list):
         print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
 
 # Checks to see if all the required variables have been filled
-def all_variables_inputted(required_var_list):
+def all_variables_inputted(values, required_var_list):
     while all(variables in values for variables in required_var_list) is False:
         for variable in list(required_var_list - values.keys()):
             print("\nMissing value(s) for: ",variable)
             variable_value = input(f"Enter the value for {variable}: ")
-            variable_error_handling(variable, variable_value)
+            variable_error_handling(variable, variable_value, values)
         all(variables in values for variables in required_var_list)
 
 def reset():
@@ -189,13 +189,9 @@ def load_modules():
                 available_templates[module.name] = module.function_name
                 globals()[module.function_name] = getattr(module, module.function_name)
 
-
-########## MAIN MENU EXAMPLE ##########
-available_templates = {"Attack Name/Explaination":"attack_function_name"}
-values = {}
-
-if __name__ == '__main__':
-
+def nmap_scan():
+    global values
+    global ports
 
     interfaces = get_if_list()
     if len(interfaces) > 1:
@@ -282,7 +278,17 @@ if __name__ == '__main__':
     values["target_ip"]=target_ip
     values["quantity"]=100
     '''
-    
+    return values
+
+########## MAIN MENU EXAMPLE ##########
+
+if __name__ == '__main__':
+
+    available_templates = {"Attack Name/Explaination":"attack_function_name"}
+    values = {}
+
+    nmap_scan()
+
     load_modules()
 
     while True:
@@ -291,7 +297,7 @@ if __name__ == '__main__':
         try:
             data = int(input("\n\nWhich Attack? (Enter a Number): "))
             if 1 <= data <= (len(list(available_templates.keys())) -1):
-                eval(available_templates.get(list(available_templates.keys())[data]) + "()")
+                eval(available_templates.get(list(available_templates.keys())[data]) + "(values)")
                 reset()
                 #break
             else:
