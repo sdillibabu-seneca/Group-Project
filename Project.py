@@ -1,5 +1,5 @@
-#from scapy.all import *
-#import nmap
+from scapy.all import *
+import nmap
 import re
 import sys
 import os
