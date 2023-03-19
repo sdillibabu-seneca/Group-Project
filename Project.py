@@ -298,7 +298,7 @@ if __name__ == '__main__':
             data = int(input("\n\nWhich Attack? (Enter a Number): "))
             if 1 <= data <= (len(list(available_templates.keys())) -1):
                 eval(available_templates.get(list(available_templates.keys())[data]) + "(values)")
-                reset()
+                #reset()
                 #break
             else:
                 print("\nInvalid input", data)
