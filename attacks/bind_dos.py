@@ -6,7 +6,7 @@ function_name = "bind_dos"
 
 def bind_dos():
     print("Running DNS DOS attack, please enter the parameters:\n")
-    valid_var = ["target_ip", "query_type", "query_name","quantity"]
+    valid_var = ["query_type", "query_name","quantity"]
     bind_var = ["query_type", "query_name"]
     help_statement = "\nsends a multitude of DOS queries to attempt to overwhelm the target"
     bind = []
