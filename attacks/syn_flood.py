@@ -5,7 +5,7 @@ function_name = "syn_flood"
 
 def syn_flood():
     print("SYN Flood")
-    valid_var = ["source_mac_address", "target_mac_address", "target_ip", "quantity"]
+    valid_var = ["quantity"]
     help_statement = "\nsends a multitude of SYN packets to attempt to overwhelm the target"
     print("\nRunning SYN Flood attack, please enter the parameters:\n")
     variable_input(valid_var, help_statement)
