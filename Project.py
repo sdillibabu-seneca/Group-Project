@@ -145,11 +145,11 @@ def help_func(values, required_var_list):
     if "source_ip" in required_var_list:
         print("to enter ip type source_ip = 1.1.1.1, you currently have the target_ip set as", values.get("source_ip"))
     if "target_ip" in required_var_list:
-        print("to enter ip type target_ip = 1.1.1.1, you currently have the target_ip set as", values.get("target_ip"))
+        print("the target ip cannot be changed, you currently have the target_ip set as", values.get("target_ip"))
     if "source_mac_address" in required_var_list:
         print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("source_mac_address"))
     if "target_mac_address" in required_var_list:
-        print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("target_mac_address"))
+        print("the target mac cannot be changed, you currently have target_mac_address set as", values.get("target_mac_address"))
     if "timeout" in required_var_list:
         print("to enter the timeout value type any number, you currently have the timeout value set as", values.get("timeout"))
     if "quantity" in required_var_list:
@@ -202,6 +202,7 @@ def nmap_scan():
                 data = int(input("\n\nWhich Interface? (Enter a Number): "))
                 if 1 <= data <= (len(interfaces)+1):
                     interface_name = interfaces[data]
+                    values["iface"] = interfaces[data]
                     break
                 else:
                     print("\nInvalid input\n", data)
@@ -209,6 +210,7 @@ def nmap_scan():
                 print("\nInvalid input\n", data)
     else:
         interface_name = conf.iface
+        values["iface"] = conf.iface
 
 
     # Get Source IP Address
@@ -305,3 +307,4 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             print("\nExiting program")
             sys.exit()
+
