@@ -21,7 +21,7 @@ def check_var(values, required_var_list):
                 variable = required_var_list[new_num]
                 print(f"\n{variable} Selected")
                 new_val = input(f"\nEnter the new value for {variable}: ")
-                variable_error_handling(variable, new_val)
+                variable_error_handling(variable, new_val, values)
             except:
                 print("\nCould not be found, please try again")
                 continue
@@ -288,7 +288,6 @@ def nmap_scan():
     values["target_ip"]=target_ip
     values["quantity"]=100
     '''
-    return values
 
 ########## MAIN MENU EXAMPLE ##########
 
