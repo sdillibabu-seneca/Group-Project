@@ -138,7 +138,13 @@ def variable_error_handling(variable, var_value, values):
                 values["query_type"]=var_value
         else:
 	        print("Invalid query type\n")
-            
+
+    if variable == "subnet":
+        if var_value.isnumeric() and int(var_value) <= 30 and int(var_value) >= 8:
+            values["subnet"]=var_value
+        else:
+            print("Invalid subnet value\n")
+	    
 # Generic help function to give details about the attack/it's requirements
 def help_func(values, required_var_list):
     if "source_ip" in required_var_list:
@@ -157,6 +163,8 @@ def help_func(values, required_var_list):
         print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
     if "query_name" in required_var_list:
         print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
+    if "subnet" in required_var_list:
+        print("to enter subnet value type a number between 8 and 30 inclusive, you currently have the subnet value set as", values.get("subnet")) 
 
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(values, required_var_list):
