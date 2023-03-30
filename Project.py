@@ -244,13 +244,14 @@ def nmap_scan():
         # Get Target MAC Address
         nm = nmap.PortScanner()
         print("\n\nGetting target's information. Please wait...")
-        nm.scan(arguments='sTUV --top-ports 1000', hosts=target_ip)
+        nm.scan(arguments='--open -sT -sU -p T:1-1023,[1024-],U:53,67,68', hosts=target_ip)
         target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
         values["target_mac_address"]= target_mac_address
 
         # Get Target Ports
         try:
             ports = list(nm[target_ip]['tcp'].keys())
+            ports = ports + list(nm[target_ip]['udp'].keys())
             values["ports"]=ports
             print(ports)
         except:
