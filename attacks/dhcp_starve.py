@@ -28,9 +28,7 @@ def starve(values):
     subnet = subnet + "."
 
     for i in range(1,last_ip):
-        print(i)
         current_ip = (int(ip_pool_start) + int(i))
-        print(current_ip)
         requested_IP = subnet + str(current_ip)
         print(requested_IP)
 
