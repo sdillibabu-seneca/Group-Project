@@ -7,8 +7,7 @@ import importlib.util
 
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
-    correct = "no"
-    while correct != "yes":
+    while True:
         print("")
         for i, (k, v) in enumerate({key: values[key] for key in required_var_list if key in values}.items()):
             print(i, '. ', k, ' is ', v)
@@ -237,7 +236,7 @@ def nmap_scan():
         # Get Target MAC Address
         nm = nmap.PortScanner()
         print("\n\nGetting target's information. Please wait...")
-        nm.scan(arguments='F', hosts=target_ip)
+        nm.scan(arguments='sTUV --top-ports 1000', hosts=target_ip)
         target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
         values["target_mac_address"]= target_mac_address
 
