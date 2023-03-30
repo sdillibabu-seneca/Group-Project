@@ -7,8 +7,7 @@ import importlib.util
 
 # Confirms with user that all the variables are correct
 def check_var(values, required_var_list):
-    correct = "no"
-    while correct != "yes":
+    while True:
         print("")
         for i, (k, v) in enumerate({key: values[key] for key in required_var_list if key in values}.items()):
             print(i, '. ', k, ' is ', v)
@@ -22,7 +21,7 @@ def check_var(values, required_var_list):
                 variable = required_var_list[new_num]
                 print(f"\n{variable} Selected")
                 new_val = input(f"\nEnter the new value for {variable}: ")
-                variable_error_handling(variable, new_val)
+                variable_error_handling(variable, new_val, values)
             except:
                 print("\nCould not be found, please try again")
                 continue
@@ -139,17 +138,23 @@ def variable_error_handling(variable, var_value, values):
                 values["query_type"]=var_value
         else:
 	        print("Invalid query type\n")
-            
+
+    if variable == "subnet":
+        if var_value.isnumeric() and int(var_value) <= 30 and int(var_value) >= 8:
+            values["subnet"]=var_value
+        else:
+            print("Invalid subnet value\n")
+	    
 # Generic help function to give details about the attack/it's requirements
 def help_func(values, required_var_list):
     if "source_ip" in required_var_list:
         print("to enter ip type source_ip = 1.1.1.1, you currently have the target_ip set as", values.get("source_ip"))
     if "target_ip" in required_var_list:
-        print("to enter ip type target_ip = 1.1.1.1, you currently have the target_ip set as", values.get("target_ip"))
+        print("the target ip cannot be changed, you currently have the target_ip set as", values.get("target_ip"))
     if "source_mac_address" in required_var_list:
         print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("source_mac_address"))
     if "target_mac_address" in required_var_list:
-        print("to enter mac type target_mac_address = ff:ff:ff:ff:ff:ff, you currently have target_mac_address set as", values.get("target_mac_address"))
+        print("the target mac cannot be changed, you currently have target_mac_address set as", values.get("target_mac_address"))
     if "timeout" in required_var_list:
         print("to enter the timeout value type any number, you currently have the timeout value set as", values.get("timeout"))
     if "quantity" in required_var_list:
@@ -158,6 +163,8 @@ def help_func(values, required_var_list):
         print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
     if "query_name" in required_var_list:
         print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
+    if "subnet" in required_var_list:
+        print("to enter subnet value type a number between 8 and 30 inclusive, you currently have the subnet value set as", values.get("subnet")) 
 
 # Checks to see if all the required variables have been filled
 def all_variables_inputted(values, required_var_list):
@@ -202,6 +209,7 @@ def nmap_scan():
                 data = int(input("\n\nWhich Interface? (Enter a Number): "))
                 if 1 <= data <= (len(interfaces)+1):
                     interface_name = interfaces[data]
+                    values["iface"] = interfaces[data]
                     break
                 else:
                     print("\nInvalid input\n", data)
@@ -209,6 +217,7 @@ def nmap_scan():
                 print("\nInvalid input\n", data)
     else:
         interface_name = conf.iface
+        values["iface"] = conf.iface
 
 
     # Get Source IP Address
@@ -235,13 +244,14 @@ def nmap_scan():
         # Get Target MAC Address
         nm = nmap.PortScanner()
         print("\n\nGetting target's information. Please wait...")
-        nm.scan(arguments='F', hosts=target_ip)
+        nm.scan(arguments='--open -sT -sU -p T:1-1023,[1024-],U:53,67,68', hosts=target_ip)
         target_mac_address = str(nm[target_ip]['addresses']['mac']).lower()
         values["target_mac_address"]= target_mac_address
 
         # Get Target Ports
         try:
             ports = list(nm[target_ip]['tcp'].keys())
+            ports = ports + list(nm[target_ip]['udp'].keys())
             values["ports"]=ports
             print(ports)
         except:
@@ -278,7 +288,6 @@ def nmap_scan():
     values["target_ip"]=target_ip
     values["quantity"]=100
     '''
-    return values
 
 ########## MAIN MENU EXAMPLE ##########
 
@@ -305,3 +314,4 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             print("\nExiting program")
             sys.exit()
+
