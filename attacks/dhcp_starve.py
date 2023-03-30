@@ -2,7 +2,7 @@
 from Project import *
 import ipaddress
 
-req_port = "any"
+req_port = 67
 name = "DHCP Starvation"
 function_name = "starve"
 
