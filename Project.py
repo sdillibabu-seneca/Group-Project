@@ -213,8 +213,11 @@ def nmap_scan():
                     break
                 else:
                     print("\nInvalid input\n", data)
+            except KeyboardInterrupt:
+                print("\nExiting program")
+                sys.exit()
             except:
-                print("\nInvalid input\n", data)
+                print("\nInvalid input\n")
     else:
         interface_name = conf.iface
         values["iface"] = conf.iface
@@ -314,4 +317,3 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             print("\nExiting program")
             sys.exit()
-
