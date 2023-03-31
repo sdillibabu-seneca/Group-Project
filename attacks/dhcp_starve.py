@@ -1,7 +1,7 @@
 # https://github.com/shamiul94/DHCP-Spoofing-Attack-Network-Security/blob/master/Final-Codes/Request_Starve.py
 from Project import *
 import ipaddress
-from dhcp_spoof import *
+from attacks.dhcp_spoof import *
 
 req_port = 67
 name = "DHCP Starvation"
