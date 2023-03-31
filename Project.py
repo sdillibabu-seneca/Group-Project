@@ -213,6 +213,9 @@ def nmap_scan():
                     break
                 else:
                     print("\nInvalid input\n", data)
+            except KeyboardInterrupt:
+                print("\nExiting program")
+                sys.exit()
             except:
                 print("\nInvalid input\n")
     else:
@@ -314,4 +317,3 @@ if __name__ == '__main__':
         except KeyboardInterrupt:
             print("\nExiting program")
             sys.exit()
-
