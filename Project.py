@@ -214,7 +214,7 @@ def nmap_scan():
                 else:
                     print("\nInvalid input\n", data)
             except:
-                print("\nInvalid input\n", data)
+                print("\nInvalid input\n")
     else:
         interface_name = conf.iface
         values["iface"] = conf.iface
