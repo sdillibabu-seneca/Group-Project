@@ -162,7 +162,7 @@ def help_func(values, required_var_list):
     if "query_type" in required_var_list:
         print("valid entries for query_type are A and PTR, you currently have the query_type value set as", values.get("query_type")) 
     if "query_name" in required_var_list:
-        print("value is dependent on query type selected, you currently have the query_type value set as", values.get("query_name")) 
+        print("value is dependent on query type selected, you currently have the query_name value set as", values.get("query_name")) 
     if "subnet" in required_var_list:
         print("to enter subnet value type a number between 8 and 30 inclusive, you currently have the subnet value set as", values.get("subnet")) 
 
